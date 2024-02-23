@@ -7,7 +7,7 @@ namespace WhiteLagoon.Web.ViewModels
     {
         [Required]
         [MaxLength(50)]
-        public string Username { get; set; }
+        public string Email { get; set; }
 
         [Required]
         [MaxLength(50)]
@@ -25,7 +25,7 @@ namespace WhiteLagoon.Web.ViewModels
 
         [DisplayName("Phone(Mobile) Number")]
         public string PhoneNumber { get; set; }
-        public string? RedirectUrl { get; set; }
+        public string? ReturnUrl { get; set; }
 
     }
 }
