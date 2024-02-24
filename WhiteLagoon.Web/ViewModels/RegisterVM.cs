@@ -1,4 +1,6 @@
-﻿using System.ComponentModel;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace WhiteLagoon.Web.ViewModels
@@ -7,6 +9,7 @@ namespace WhiteLagoon.Web.ViewModels
     {
         [Required]
         [MaxLength(50)]
+        [RegularExpression("^[a-zA-Z0-9_\\.-]+@([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}$", ErrorMessage = "E-mail is not valid")]
         public string Email { get; set; }
 
         [Required]
@@ -25,7 +28,10 @@ namespace WhiteLagoon.Web.ViewModels
 
         [DisplayName("Phone(Mobile) Number")]
         public string PhoneNumber { get; set; }
-        public string? ReturnUrl { get; set; }
+        public string? RedirectUrl { get; set; }
+        public string? Role { get; set; }
 
+        [ValidateNever]
+        public IEnumerable<SelectListItem>? RoleList { get; set; }
     }
 }
