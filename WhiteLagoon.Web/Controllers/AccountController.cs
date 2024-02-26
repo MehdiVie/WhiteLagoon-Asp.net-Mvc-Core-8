@@ -64,10 +64,6 @@ namespace WhiteLagoon.Web.Controllers
 
                 if (result.Succeeded)
                 {
-                    Uri address = new Uri(Request.Host.ToString());
-
-                    var queryString=address.ToString().Split("?");
-
 
                     
                     if (!string.IsNullOrEmpty(loginVM.ReturnUrl))

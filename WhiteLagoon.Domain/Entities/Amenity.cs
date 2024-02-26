@@ -21,5 +21,8 @@ namespace WhiteLagoon.Domain.Entities
         public int VillaId { get; set; }
         [ValidateNever]
         public Villa Villa { get; set; }
+
+
+
     }
 }

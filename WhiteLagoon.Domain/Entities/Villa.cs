@@ -20,8 +20,10 @@ namespace WhiteLagoon.Domain.Entities
         public required string Name { get; set; }
         public string? Description { get; set; }
         [Display(Name = "Price Per Night")]
+
         [Range(10,10000)]
         public double Price { get; set; }
+
         [Range(300,30000)]
         public int Sqft { get; set; }
         [Range(1,10)]
@@ -35,5 +37,8 @@ namespace WhiteLagoon.Domain.Entities
 
         [ValidateNever]
         public IEnumerable<Amenity> VillaAmenity { get; set; }
+
+        [NotMapped]
+        public bool isAvailable = true;
     }
 }
