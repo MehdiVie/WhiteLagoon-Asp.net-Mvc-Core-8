@@ -28,11 +28,12 @@
                                 {
                                     @if (villa.isAvailable)
                                     {
-                                        <a class="btn btn-success form-control btn-block" asp-controller="Booking" 
+                                        <a class="btn btn-success form-control btn-block" 
+                                           asp-controller="Booking" 
                                            asp-action="FinalizeBooking" 
                                            asp-route-villaId="@villa.Id" 
-                                           asp-route-nights="@Model.Nights" 
-                                           asp-route-checkInDate="@Model.CheckInDate" >
+                                           asp-route-nights="@Model.Nights"
+                                           asp-route-checkIn="@Model.CheckInDate.ToString()">
                                             Book
                                         </a>
                                     }
