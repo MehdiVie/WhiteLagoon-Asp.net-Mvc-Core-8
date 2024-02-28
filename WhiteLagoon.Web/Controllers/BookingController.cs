@@ -17,6 +17,11 @@ namespace WhiteLagoon.Web.Controllers
             _unitOfWork = unitOfWork;
         }
         [Authorize]
+        public IActionResult Index()
+        {
+            return View();
+        }
+        [Authorize]
         public IActionResult FinalizeBooking(int villaId, string checkIn, int nights)
         {
             DateOnly checkInDate=DateOnly.Parse(checkIn);
@@ -120,5 +125,40 @@ namespace WhiteLagoon.Web.Controllers
             return View(bookingId);
         }
 
+        [Authorize]
+        public IActionResult BookingDetails(int bookingId) 
+        {
+            Booking objBookings = _unitOfWork.Booking.Get(u => u.Id == bookingId, includeProperties: "User,Villa");
+
+            return View(objBookings);
+        }
+
+        #region API Calls
+        [HttpGet]
+        [Authorize]
+        public IActionResult GetAll(string status)
+        {
+            IEnumerable<Booking> objBookings;
+
+            if(User.IsInRole(SD.Role_Admin))
+            {
+                objBookings=_unitOfWork.Booking.GetAll(includeProperties:"User,Villa");
+            }
+            else 
+            {
+                var claimIdentity = (ClaimsIdentity)User.Identity;
+                var UserId = claimIdentity.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+                objBookings = _unitOfWork.Booking.GetAll(u=>u.UserId == UserId, includeProperties: "User,Villa");
+            }
+            if(!string.IsNullOrEmpty(status))
+            {
+                objBookings = objBookings.Where(u => u.Status.ToLower().Equals(status.ToLower()));
+            }
+            return Json (new { data = objBookings });
+        }
+
+
+        #endregion
     }
 }
