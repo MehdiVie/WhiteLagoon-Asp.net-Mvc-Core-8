@@ -23,7 +23,8 @@ namespace WhiteLagoon.Infrastructure.Repository
             _db.Update(entity);
         }
 
-        public void UpdateStaturs(int bookingId, string bookingStatus)
+
+        public void UpdateStaturs(int bookingId, string bookingStatus, int villaNumber)
         {
             var bookingFromDb = _db.Bookings.FirstOrDefault(u=>u.Id == bookingId);
 
@@ -32,6 +33,7 @@ namespace WhiteLagoon.Infrastructure.Repository
                 bookingFromDb.Status =bookingStatus;
                 if (bookingStatus == SD.StatusCheckedIn)
                 {
+                    bookingFromDb.VillaNumber = villaNumber;  
                     bookingFromDb.ActualCheckInDate = DateTime.Now;
                 }
                 if (bookingStatus == SD.StatusCompleted)

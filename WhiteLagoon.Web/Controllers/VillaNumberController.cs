@@ -18,7 +18,7 @@ namespace WhiteLagoon.Web.Controllers
         }
         public IActionResult Index()
         {
-            var villas = _unitOfWork.VillaNumber.GetAll(includeProperties: "Villa");
+            var villas = _unitOfWork.VillaNumber.GetAll(includeProperties: "Villa").OrderBy(x => x.VillaId);
             return View(villas);
         }
         public IActionResult Create()

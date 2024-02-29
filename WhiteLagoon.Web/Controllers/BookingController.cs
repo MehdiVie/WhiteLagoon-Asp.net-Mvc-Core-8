@@ -57,7 +57,26 @@ namespace WhiteLagoon.Web.Controllers
             booking.TotalCost = villa.Price * booking.Nights;
 
             booking.Status = SD.StatusPending;
-            booking.BookingDate = DateTime.Now; 
+            booking.BookingDate = DateTime.Now;
+
+            List<VillaNumber> villaNumbersList=_unitOfWork.VillaNumber.GetAll().ToList();
+            List<Booking> bookedVillas= _unitOfWork.Booking.GetAll(u => u.Status == SD.StatusCheckedIn ||
+            u.Status == SD.StatusApproved).ToList();
+
+            int roomsAvailable = SD.VillaRoomsAvailable_Count(villa.Id, villaNumbersList, booking.CheckInDate, 
+                                                                booking.Nights, bookedVillas);
+
+            if(roomsAvailable==0)
+            {
+                TempData["error"] = "Room has been sold out!";
+
+                return RedirectToAction(nameof(FinalizeBooking), new
+                {
+                    villaId = booking.VillaId,
+                    checkIn = booking.CheckInDate.ToString(),
+                    nights = booking.Nights
+                });
+            }
 
             _unitOfWork.Booking.Add(booking);
 
@@ -116,7 +135,7 @@ namespace WhiteLagoon.Web.Controllers
 
                 if(session.PaymentStatus == "paid") 
                 {
-                    _unitOfWork.Booking.UpdateStaturs(bookingFromDb.Id, SD.StatusApproved);
+                    _unitOfWork.Booking.UpdateStaturs(bookingFromDb.Id, SD.StatusApproved,0);
                     _unitOfWork.Booking.UpdateStripePaymentID(bookingFromDb.Id, session.Id, session.PaymentIntentId);
                     _unitOfWork.Save();
                 }
@@ -126,11 +145,55 @@ namespace WhiteLagoon.Web.Controllers
         }
 
         [Authorize]
-        public IActionResult BookingDetails(int bookingId) 
+        public IActionResult BookingDetails(int bookingId)
         {
             Booking objBookings = _unitOfWork.Booking.Get(u => u.Id == bookingId, includeProperties: "User,Villa");
 
+            
+
+            if (objBookings.VillaNumber==0 && objBookings.Status==SD.StatusApproved)
+            {
+                var availableVillaNumbers = AssignAvailabeVillaNumberByVillaId(objBookings.VillaId);
+
+                objBookings.VillaNumbers=_unitOfWork.VillaNumber.GetAll(u=>u.VillaId==objBookings.VillaId &&
+                                                                 availableVillaNumbers.Any(x=>x==u.Villa_Number)).ToList();
+            }
+
             return View(objBookings);
+        }
+
+
+        [HttpPost]
+        [Authorize(Roles =SD.Role_Admin)]
+        public IActionResult CheckIn(Booking booking)
+        {
+            _unitOfWork.Booking.UpdateStaturs(booking.Id, SD.StatusCheckedIn, booking.VillaNumber);
+            _unitOfWork.Save();
+
+            TempData["success"] = "Booking CheckedIn Successfully!";
+            return RedirectToAction(nameof(BookingDetails), new { bookingId = booking.Id });
+        }
+
+        [HttpPost]
+        [Authorize(Roles = SD.Role_Admin)]
+        public IActionResult CheckOut(Booking booking)
+        {
+            _unitOfWork.Booking.UpdateStaturs(booking.Id, SD.StatusCompleted, booking.VillaNumber);
+            _unitOfWork.Save();
+
+            TempData["success"] = "Booking CheckedOut Successfully!";
+            return RedirectToAction(nameof(BookingDetails), new { bookingId = booking.Id });
+        }
+
+        [HttpPost]
+        [Authorize]
+        public IActionResult CancelBooking(Booking booking)
+        {
+            _unitOfWork.Booking.UpdateStaturs(booking.Id, SD.StatusCancelled, 0);
+            _unitOfWork.Save();
+
+            TempData["success"] = "Booking Cancelled Successfully!";
+            return RedirectToAction(nameof(BookingDetails), new { bookingId = booking.Id });
         }
 
         #region API Calls
@@ -158,7 +221,26 @@ namespace WhiteLagoon.Web.Controllers
             return Json (new { data = objBookings });
         }
 
+        private List<int> AssignAvailabeVillaNumberByVillaId(int villaId)
+        {
+            List<int> availableVillaNumbers = new();
 
+            List<int> villaNumbers = _unitOfWork.VillaNumber.GetAll(u => u.VillaId == villaId).Select(x => x.Villa_Number).ToList();
+
+            List<int> bookedVillaNumbers = _unitOfWork.Booking.GetAll(u => u.VillaId == villaId &&
+                                           (u.Status==SD.StatusApproved || u.Status == SD.StatusCheckedIn))
+                                           .Select(x => x.VillaNumber).ToList();
+
+            foreach (var villanumber in villaNumbers)
+            {
+                if (!bookedVillaNumbers.Contains(villanumber))
+                {
+                    availableVillaNumbers.Add(villanumber);
+                }
+            }
+
+            return availableVillaNumbers;
+        }
         #endregion
     }
 }

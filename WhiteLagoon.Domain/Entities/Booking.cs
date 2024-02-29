@@ -53,5 +53,7 @@ namespace WhiteLagoon.Domain.Entities
         public DateTime ActualCheckOutDate { get; set; }
 
         public int VillaNumber { get; set; }
+        [NotMapped]
+        public IEnumerable<VillaNumber> VillaNumbers { get; set; }
     }
 }

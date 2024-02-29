@@ -64,7 +64,11 @@ namespace WhiteLagoon.Web.Controllers
 
                 if (result.Succeeded)
                 {
-
+                    var user=await _userManager.FindByEmailAsync(loginVM.Email);
+                    if(await _userManager.IsInRoleAsync(user,SD.Role_Admin))
+                    {
+                        return RedirectToAction("Index", "Dashboard");
+                    }
                     
                     if (!string.IsNullOrEmpty(loginVM.ReturnUrl))
                     {
